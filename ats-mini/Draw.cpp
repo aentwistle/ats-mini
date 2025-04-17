@@ -109,6 +109,14 @@ static void drawFrequency(uint32_t freq, int x, int y, int ux, int uy)
     spr.setTextDatum(ML_DATUM);
     spr.setTextColor(TH.funit_text, TH.bg);
     spr.drawString("MHz", ux, uy);
+    // Draw RDS PI code, if present
+    uint16_t piCode = getRdsPiCode();
+    if(piCode)
+    {
+      char text[8];
+      sprintf(text, "PI:%04X", piCode);
+      spr.drawString(text, ux, uy+22, 2);
+    }
   }
   else
   {
@@ -279,8 +287,19 @@ void drawScreen()
   if(*getStationName())
     drawStationName(getStationName(), RDS_OFFSET_X, RDS_OFFSET_Y);
 
-  // Draw tuner scale
-  drawScale(isSSB()? (currentFrequency + currentBFO/1000) : currentFrequency);
+  // If additional station or program info present...
+  if(*getStationInfo() || *getProgramInfo())
+  {
+    // Draw station and program info
+    spr.fillRect(0, 130, 320, 30, TH.bg);
+    spr.drawString(getStationInfo(), RDS_OFFSET_X, RDS_OFFSET_Y + 20, 2);
+    spr.drawString(getProgramInfo(), RDS_OFFSET_X, RDS_OFFSET_Y + 35, 2);
+  }
+  else
+  {
+    // Draw tuner scale
+    drawScale(isSSB()? (currentFrequency + currentBFO/1000) : currentFrequency);
+  }
 
 #ifdef ENABLE_HOLDOFF
   // Update if not tuning
