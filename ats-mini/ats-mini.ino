@@ -330,8 +330,8 @@ void useBand(const Band *band)
   rssi = 0;
   snr  = 0;
 
-  // Clear current station name (RDS/CB)
-  clearStationName();
+  // Clear current station info (RDS/CB)
+  clearStationInfo();
 
   // Check current CB channel
   checkCbChannel();
@@ -598,7 +598,7 @@ bool doRotate(int8_t dir)
     updateFrequency(currentFrequency + step * dir);
 
     // Clear current station name and information
-    clearStationName();
+    clearStationInfo();
 
     // Check current CB channel
     checkCbChannel();
