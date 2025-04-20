@@ -277,7 +277,6 @@ void drawScreen()
   // Draw S-meter
   drawSMeter(getStrength(rssi), METER_OFFSET_X, METER_OFFSET_Y);
 
-<<<<<<< HEAD
   // Indicate FM pilot detection
   if((currentMode==FM) && rx.getCurrentPilot())
     spr.fillRect(15 + METER_OFFSET_X, 7+METER_OFFSET_Y, 4*17, 2, TH.bg);
@@ -285,20 +284,6 @@ void drawScreen()
   // Show station or channel name, if present
   if(*getStationName())
     drawStationName(getStationName(), RDS_OFFSET_X, RDS_OFFSET_Y);
-
-  // If additional station or program info present...
-  if(*getStationInfo() || *getProgramInfo())
-  {
-    // Draw station and program info
-    spr.fillRect(0, 130, 320, 30, TH.bg);
-    spr.drawString(getStationInfo(), RDS_OFFSET_X, RDS_OFFSET_Y + 20, 2);
-    spr.drawString(getProgramInfo(), RDS_OFFSET_X, RDS_OFFSET_Y + 35, 2);
-  }
-  else
-  {
-    // Draw tuner scale
-    drawScale(isSSB()? (currentFrequency + currentBFO/1000) : currentFrequency);
-  }
 
   // If there is station or program info...
   if(*getStationInfo() || *getProgramInfo())
