@@ -277,7 +277,6 @@ void drawScreen()
   // Draw S-meter
   drawSMeter(getStrength(rssi), METER_OFFSET_X, METER_OFFSET_Y);
 
-<<<<<<< HEAD
   // Indicate FM pilot detection
 #ifndef THEME_EDITOR
   if((currentMode==FM) && rx.getCurrentPilot())
