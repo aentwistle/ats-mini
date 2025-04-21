@@ -30,23 +30,23 @@ const char *getStationName()
 #ifdef THEME_EDITOR
   return("*STATION*");
 #else
-  return(bufStationName);
+  return(getRDSMode() & RDS_PS? bufStationName : "");
 #endif
 }
 
 const char *getStationInfo()
 {
-  return(bufStationInfo);
+  return(getRDSMode() & RDS_RT? bufStationInfo : "");
 }
 
 const char *getProgramInfo()
 {
-  return(bufProgramInfo);
+  return(getRDSMode() & RDS_RT? bufProgramInfo : "");
 }
 
 uint16_t getRdsPiCode()
 {
-  return(piCode);
+  return(getRDSMode() & RDS_PI? piCode : 0x0000);
 }
 
 void clearStationInfo()
@@ -128,16 +128,17 @@ static bool showRdsTime(const char *rdsTime)
 bool checkRds()
 {
   bool needRedraw = false;
+  uint8_t mode = getRDSMode();
 
   rx.getRdsStatus();
 
   if(rx.getRdsReceived() && rx.getRdsSync() && rx.getRdsSyncFound())
   {
-    needRedraw |= showStationName(rx.getRdsStationName());
-    needRedraw |= showStationInfo(rx.getRdsStationInformation());
-    needRedraw |= showProgramInfo(rx.getRdsProgramInformation());
-    needRedraw |= showRdsPiCode(rx.getRdsPI());
-    needRedraw |= (getRDSMode() & RDS_CT) && showRdsTime(rx.getRdsTime());
+    needRedraw |= (mode & RDS_PS) && showStationName(rx.getRdsStationName());
+    needRedraw |= (mode & RDS_RT) && showStationInfo(rx.getRdsStationInformation());
+    needRedraw |= (mode & RDS_RT) && showProgramInfo(rx.getRdsProgramInformation());
+    needRedraw |= (mode & RDS_PI) && showRdsPiCode(rx.getRdsPI());
+    needRedraw |= (mode & RDS_CT) && showRdsTime(rx.getRdsTime());
   }
 
   // Return TRUE if any RDS information changes
