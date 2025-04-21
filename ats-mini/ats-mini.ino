@@ -333,8 +333,8 @@ void useBand(const Band *band)
   // Clear current station name (RDS/CB)
   clearStationName();
 
-  // Check current CB channel
-  checkCbChannel();
+  // Check current frequency name (CB channel, etc)
+  checkFreqName(currentFrequency);
 }
 
 // This function is called by the seek function process.
@@ -600,8 +600,8 @@ bool doRotate(int8_t dir)
     // Clear current station name and information
     clearStationName();
 
-    // Check current CB channel
-    checkCbChannel();
+    // Check current frequency name (CB channel, etc)
+    checkFreqName(currentFrequency);
 
     // Will need a redraw
     needRedraw = true;

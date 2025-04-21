@@ -5,19 +5,21 @@
 #define MIN_CB_FREQUENCY 26060
 #define MAX_CB_FREQUENCY 29665
 
-const char *cbChannelNumber[] =
+//
+// Named frequencies, such as CB channels, etc
+//
+static const NamedFreq namedFrequencies[] =
 {
-  "1",  "2",  "3",  "41",
-  "4",  "5",  "6",  "7",  "42",
-  "8",  "9",  "10", "11", "43",
-  "12", "13", "14", "15", "44",
-  "16", "17", "18", "19", "45",
-  "20", "21", "22", "23",
-  "24", "25", "26", "27",
-  "28", "29", "30", "31",
-  "32", "33", "34", "35",
-  "36", "37", "38", "39",
-  "40",
+  { 26965, "CH1" },  { 26975, "CH2" },  { 26985, "CH3" },  { 27005, "CH4" },
+  { 27015, "CH5" },  { 27025, "CH6" },  { 27035, "CH7" },  { 27055, "CH8" },
+  { 27065, "CH9" },  { 27075, "CH10" }, { 27085, "CH11" }, { 27105, "CH12" },
+  { 27115, "CH13" }, { 27125, "CH14" }, { 27135, "CH15" }, { 27155, "CH16" },
+  { 27165, "CH17" }, { 27175, "CH18" }, { 27185, "CH19" }, { 27205, "CH20" },
+  { 27215, "CH21" }, { 27225, "CH22" }, { 27235, "CH24" }, { 27245, "CH25" },
+  { 27255, "CH23" }, { 27265, "CH26" }, { 27275, "CH27" }, { 27285, "CH28" },
+  { 27295, "CH29" }, { 27305, "CH30" }, { 27315, "CH31" }, { 27325, "CH32" },
+  { 27335, "CH33" }, { 27345, "CH34" }, { 27355, "CH35" }, { 27365, "CH36" },
+  { 27375, "CH37" }, { 27385, "CH38" }, { 27395, "CH39" }, { 27405, "CH40" },
 };
 
 char bufStationName[50] = "";
@@ -102,34 +104,23 @@ bool checkRds()
   return(needRedraw);
 }
 
-bool checkCbChannel()
+static const char *findNameByFreq(uint16_t freq, const NamedFreq *db, uint16_t dbSize)
 {
-  const int column_step = 450; // In kHz
-  const int row_step    = 10;
-  const int max_columns = 8;   // A-H
-  const int max_rows    = 45;
+  int r, l;
 
-  if(currentFrequency<MIN_CB_FREQUENCY || currentFrequency>MAX_CB_FREQUENCY)
-    return(showRdsStation(""));
-
-  int offset = currentFrequency - MIN_CB_FREQUENCY;
-  char type  = 'R';
-  if((offset%10) == 5)
+  for(l=0, r=dbSize-1 ; l <= r ; )
   {
-    type = 'E';
-    offset -= 5;
+    int m = (l + r) >> 1;
+    if(db[m].freq < freq)      l = m + 1;
+    else if(db[m].freq > freq) r = m - 1;
+    else return(db[m].name);
   }
 
-  int column_index = offset / column_step;
-  int remainder    = offset % column_step;
-  if((column_index>=max_columns) || (remainder%row_step))
-    return(showRdsStation(""));
+  return(0);
+}
 
-  int row_number = remainder / row_step;
-  if((row_number>=max_rows) || (row_number<0))
-    return(showRdsStation(""));
-
-  char buf[50];
-  sprintf(buf, "%c%s%c", 'A' + column_index, cbChannelNumber[row_number], type);
-  return(showRdsStation(buf));
+bool checkFreqName(uint16_t freq)
+{
+  const char *name = findNameByFreq(freq, namedFrequencies, ITEM_COUNT(namedFrequencies));
+  return(showRdsStation(name? name : ""));
 }
