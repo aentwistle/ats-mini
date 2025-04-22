@@ -212,11 +212,6 @@ void setup()
   // Attached pin to allows SI4732 library to mute audio as required to minimise loud clicks
   rx.setAudioMuteMcuPin(AUDIO_MUTE);
 
-<<<<<<< HEAD
-=======
-  clearStationInfo();
-
->>>>>>> f023eda (Adding RDS information.)
   delay(300);
 
   // Audio Amplifier Enable. G8PTN: Added
