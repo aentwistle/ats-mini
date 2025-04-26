@@ -56,6 +56,7 @@ typedef struct
 //
 
 extern Band bands[];
+extern Memory memories[];
 extern const char *bandModeDesc[];
 
 extern int bandIdx;
@@ -87,6 +88,7 @@ bool clickSideBar(uint16_t cmd);
 void clickVolume();
 void selectBand(uint8_t idx);
 int getTotalBands();
+int getTotalMemories();
 Band *getCurrentBand();
 const Step *getCurrentStep();
 int getSteps(bool fast = false);

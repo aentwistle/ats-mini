@@ -129,6 +129,8 @@ const char *bandModeDesc[] = { "FM", "LSB", "USB", "AM" };
 uint8_t memoryIdx = 0;
 Memory memories[32];
 
+int getTotalMemories() { return(ITEM_COUNT(memories)); }
+
 //
 // RDS Menu
 //
@@ -449,7 +451,7 @@ static void doMemory(int dir)
 
 static void clickMemory(uint8_t idx)
 {
-  // Reset command
+  // Close Memory menu
   currentCmd = CMD_NONE;
 
   // Must have a valid index
@@ -474,18 +476,22 @@ static void clickMemory(uint8_t idx)
   }
   else
   {
-    // Verify new band
     uint8_t newBandIdx = memories[idx].band;
-    if(newBandIdx>=getTotalBands()) return;
-    if(!isMemoryInBand(&bands[newBandIdx], &memories[idx])) return;
-    // Save current band settings
-    bands[bandIdx].currentFreq    = freq;
-    bands[bandIdx].currentStepIdx = currentMode==FM? fmStepIdx:amStepIdx;
-    // Load frequency and modulation from memory slot
-    bands[newBandIdx].currentFreq = memories[idx].freq;
-    bands[newBandIdx].bandMode    = memories[idx].mode;
-    // Enable the new band
-    selectBand(newBandIdx);
+
+    // Verify selected memory slot, delete contents if wrong
+    if((newBandIdx>=getTotalBands()) || !isMemoryInBand(&bands[newBandIdx], &memories[idx]))
+      memories[idx].freq = 0;
+    else
+    {
+      // Save current band settings
+      bands[bandIdx].currentFreq    = freq;
+      bands[bandIdx].currentStepIdx = currentMode==FM? fmStepIdx:amStepIdx;
+      // Load frequency and modulation from memory slot
+      bands[newBandIdx].currentFreq = memories[idx].freq;
+      bands[newBandIdx].bandMode    = memories[idx].mode;
+      // Enable the new band
+      selectBand(newBandIdx);
+    }
   }
 }
 
