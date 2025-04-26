@@ -128,6 +128,7 @@ const char *bandModeDesc[] = { "FM", "LSB", "USB", "AM" };
 
 uint8_t memoryIdx = 0;
 Memory memories[32];
+Memory newMemory;
 
 int getTotalMemories() { return(ITEM_COUNT(memories)); }
 
@@ -343,7 +344,13 @@ static void clickMenu(int cmd)
     case MENU_AGC_ATT:  currentCmd = CMD_AGC;       break;
     case MENU_BAND:     currentCmd = CMD_BAND;      break;
     case MENU_SETTINGS: currentCmd = CMD_SETTINGS;  break;
-    case MENU_MEMORY:   currentCmd = CMD_MEMORY;    break;
+
+    case MENU_MEMORY:
+      currentCmd = CMD_MEMORY;
+      newMemory.freq = currentFrequency + currentBFO / 1000;
+      newMemory.mode = currentMode;
+      newMemory.band = bandIdx;
+      break;
 
     case MENU_SOFTMUTE:
       // No soft mute in FM mode
@@ -444,54 +451,54 @@ static void doRDSMode(int dir)
   if(!(getRDSMode() & RDS_CT)) clockReset();
 }
 
+bool tuneToMemory(const Memory *memory)
+{
+  // Must have frequency
+  if(!memory->freq) return(false);
+  // Must have valid band index
+  if(memory->band>=getTotalBands()) return(false);
+  // Band must contain frequency and modulation
+  if(!isMemoryInBand(&bands[memory->band], memory)) return(false);
+
+  // Save current band settings
+  bands[bandIdx].currentFreq    = currentFrequency + currentBFO / 1000;
+  bands[bandIdx].currentStepIdx = currentMode==FM? fmStepIdx:amStepIdx;
+
+  // Load frequency and modulation from memory slot
+  bands[memory->band].currentFreq = memory->freq;
+  bands[memory->band].bandMode    = memory->mode;
+
+  // Enable the new band
+  selectBand(memory->band);
+  return(true);
+}
+
 static void doMemory(int dir)
 {
   memoryIdx = wrap_range(memoryIdx, dir, 0, LAST_ITEM(memories));
+  if(!tuneToMemory(&memories[memoryIdx])) tuneToMemory(&newMemory);
 }
 
 static void clickMemory(uint8_t idx)
 {
-  // Close Memory menu
-  currentCmd = CMD_NONE;
-
   // Must have a valid index
   if(idx>LAST_ITEM(memories)) return;
 
-  // This is our current frequency
-  uint16_t freq = currentFrequency + currentBFO / 1000;
-
-  // If clicking on an empty memory slot...
+  // If clicking on an empty memory slot, save to it
   if(!memories[idx].freq)
   {
-    // Save current frequency and modulation into memory slot
-    memories[idx].freq = freq;
-    memories[idx].mode = currentMode;
-    memories[idx].band = bandIdx;
+    memories[idx] = newMemory;
+    currentCmd = CMD_NONE;
   }
-  // If clicking on the same frequency...
-  else if(memories[idx].freq==freq)
+  // If clicking on the same memory slot, delete it
+  else if(!memcmp(&memories[idx], &newMemory, sizeof(newMemory)))
   {
-    // Delete memory slot contents
     memories[idx].freq = 0;
   }
+  // Do nothing, memory slot already activated in doMemory()
   else
   {
-    uint8_t newBandIdx = memories[idx].band;
-
-    // Verify selected memory slot, delete contents if wrong
-    if((newBandIdx>=getTotalBands()) || !isMemoryInBand(&bands[newBandIdx], &memories[idx]))
-      memories[idx].freq = 0;
-    else
-    {
-      // Save current band settings
-      bands[bandIdx].currentFreq    = freq;
-      bands[bandIdx].currentStepIdx = currentMode==FM? fmStepIdx:amStepIdx;
-      // Load frequency and modulation from memory slot
-      bands[newBandIdx].currentFreq = memories[idx].freq;
-      bands[newBandIdx].bandMode    = memories[idx].mode;
-      // Enable the new band
-      selectBand(newBandIdx);
-    }
+    currentCmd = CMD_NONE;
   }
 }
 
